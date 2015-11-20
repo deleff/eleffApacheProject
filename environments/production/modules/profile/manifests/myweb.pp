@@ -1,4 +1,4 @@
-class profile::myweb {
+class profile::myweb ( $portnum = hiera('apacheport') ) {
 
   # include apache
   class { 'apache':
@@ -7,15 +7,16 @@ class profile::myweb {
 
   # set the port
   apache::vhost { 'first.example.com':
-    port    => hiera('apacheport'),
+    port    => $portnum,
     docroot => '/var/www/first',
   }
 
-
-  # create a hash from hiera data with the Vhosts
-  #$myApacheVhosts = hiera('apache::vhost', {})
-
-  # with create resource, convert a hash into a set of resoures
-  #create_resources('apache::vhost', $myApacheVhosts)
+   # disable the appropriate firewalls
+   firewall { '100 allow http and https access':
+    dport   => [80, 443, 61613, 8140, $portnum],
+    proto  => tcp,
+    action => accept,
+  }
+  
 
 }
